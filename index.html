@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/jpg" href="https://files.catbox.moe/ggfb3d.png" />
+  <title>YouTube Video Downloader</title>
+  <style>
+    :root {
+      --bg: #050816;
+      --card-bg: rgba(15, 23, 42, 0.95);
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.15);
+      --accent-strong: #4f46e5;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --success: #4ade80;
+      --radius-lg: 20px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.8);
+      --transition-fast: 0.18s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+    }
+    
+    .navbar .brand {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--text-color);
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: opacity 0.3s;
+    }
+    
+    .navbar .brand:hover {
+      opacity: 0.8;
+    }
+    
+    .navbar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      padding: 20px 30px;
+      justify-content: flex-start;
+    }
+    
+    .navbar img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.15), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(129, 140, 248, 0.16), transparent 55%),
+    radial-gradient(circle at 50% 100%, rgba(244, 63, 94, 0.18), transparent 55%),
+    var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: var(--text-main);
+}
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .card {
+      background: linear-gradient(
+          135deg,
+          rgba(148, 163, 184, 0.08),
+          transparent 40%,
+          rgba(79, 70, 229, 0.12)
+        ),
+        var(--card-bg);
+      border-radius: 26px;
+      padding: 24px 24px 28px;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(94, 234, 212, 0.09), transparent 45%),
+        radial-gradient(circle at 100% 100%, rgba(248, 250, 252, 0.04), transparent 45%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .title-group {
+      max-width: 70%;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h1 span.accent-dot {
+      display: inline-flex;
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #a5b4fc 0%, #4f46e5 40%, #22c55e 100%);
+      box-shadow: 0 0 18px rgba(129, 140, 248, 0.8);
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .pill {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.65);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 999px;
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.85);
+    }
+
+    .form {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .input-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 44px 14px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        background var(--transition-fast),
+        transform var(--transition-fast);
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(148, 163, 184, 0.75);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.8),
+        0 16px 32px rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(3px);
+      font-size: 0.85rem;
+      color: rgba(148, 163, 184, 0.9);
+      pointer-events: none;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      min-width: 146px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 0 0, #22c55e, #4f46e5 60%, #0ea5e9 100%);
+      color: #f9fafb;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 18px 35px rgba(59, 130, 246, 0.58);
+      transition: transform 0.16s ease-out, box-shadow 0.16s ease-out,
+        filter 0.16s ease-out;
+    }
+
+    .btn-primary span.spark {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at 10% 0,
+        rgba(248, 250, 252, 0.24),
+        transparent 40%
+      );
+      opacity: 0;
+      transition: opacity 0.18s ease-out;
+      pointer-events: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 22px 40px rgba(37, 99, 235, 0.85);
+      filter: brightness(1.05);
+    }
+
+    .btn-primary:hover .spark {
+      opacity: 1;
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 12px 25px rgba(30, 64, 175, 0.9);
+      filter: brightness(0.97);
+    }
+
+    .btn-primary .loader {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 2px solid rgba(248, 250, 252, 0.35);
+      border-top-color: #f9fafb;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.75);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(15, 23, 42, 0.95);
+      border-color: rgba(209, 213, 219, 0.9);
+      color: #e5e7eb;
+      transform: translateY(-1px);
+    }
+
+    .hint-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .hint-code {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+        Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      color: rgba(226, 232, 240, 0.9);
+    }
+
+    /* RESULT SECTION */
+
+    .result {
+      margin-top: 22px;
+      border-radius: 20px;
+      background: radial-gradient(
+          circle at 0 0,
+          rgba(129, 140, 248, 0.16),
+          transparent 55%
+        ),
+        rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 16px;
+      display: none;
+      gap: 16px;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .result.show {
+      display: flex;
+    }
+
+    .thumb-wrapper {
+      width: 220px;
+      max-width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      background: #020617;
+      flex-shrink: 0;
+    }
+
+    .thumb-wrapper img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform-origin: center;
+      transition: transform 0.2s ease-out, filter 0.2s ease-out;
+    }
+
+    .thumb-wrapper::after {
+      content: "▶";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      color: rgba(248, 250, 252, 0.95);
+      text-shadow: 0 0 18px rgba(15, 23, 42, 0.8);
+      mix-blend-mode: screen;
+      opacity: 0;
+      transition: opacity 0.15s ease-out;
+      pointer-events: none;
+    }
+
+    .thumb-wrapper:hover img {
+      transform: scale(1.03);
+      filter: brightness(1.06);
+    }
+
+    .thumb-wrapper:hover::after {
+      opacity: 0.9;
+    }
+
+    .result-body {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .result-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      color: rgba(226, 232, 240, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(129, 140, 248, 0.85);
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .download-link {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .download-link span.icon {
+      font-size: 1rem;
+      transform: translateY(1px);
+    }
+
+    .result-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* STATUS / ERROR */
+
+    .status {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 20px;
+    }
+
+    .status span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+    }
+
+    .status.ok span.dot {
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.9);
+    }
+
+    .status.error span.dot {
+      background: var(--danger);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.9);
+    }
+
+    .status-text {
+      color: var(--text-muted);
+    }
+
+    .status.error .status-text {
+      color: var(--danger);
+    }
+
+    /* FOOTER */
+
+    .footer {
+      margin-top: 18px;
+      font-size: 0.78rem;
+      color: rgba(148, 163, 184, 0.85);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer span strong {
+      color: rgba(226, 232, 240, 0.96);
+      font-weight: 600;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .card {
+        padding: 18px 16px 22px;
+        border-radius: 20px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .title-group {
+        max-width: 100%;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      .result {
+        flex-direction: column;
+      }
+
+      .thumb-wrapper {
+        width: 100%;
+        max-height: 220px;
+      }
+
+      .btn-primary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="#" class="brand">
+      <img src="https://files.catbox.moe/u6lbpu.jpg" alt="Logo YawwOffc" />
+      <span>YawwOffc</span>
+    </a>
+  </div>
+  <div class="app">
+    <div class="card">
+      <div class="card-inner">
+        <div class="header">
+          <div class="title-group">
+            <h1>
+              <span class="accent-dot"></span>
+              YouTube Smart Downloader
+            </h1>
+            <p class="subtitle">
+              Masukkan URL YouTube, biarkan script ini bekerja, dan kamu tinggal klik download.
+              Tanpa drama pop-up yang mencurigakan.
+            </p>
+          </div>
+          <div class="pill">
+            <span class="pill-dot"></span>
+            LIVE API MODE
+          </div>
+        </div>
+
+        <form class="form" id="yt-form">
+          <div class="input-row">
+            <div class="input-wrapper">
+              <div class="input-label">
+                URL Video YouTube
+              </div>
+              <input
+                type="text"
+                id="yt-url"
+                placeholder="contoh: https://youtu.be/ZrTlBpBBCZc"
+                autocomplete="off"
+              />
+              <div class="input-icon">🔗</div>
+            </div>
+            <button type="submit" class="btn-primary" id="submit-btn">
+              <span class="spark"></span>
+              <span class="btn-text">Generate Link</span>
+            </button>
+          </div>
+
+          <div class="hint-row">
+            <div class="hint">
+              Support format: URL pendek / panjang YouTube. Selama valid, pasti akan terdownload.
+            </div>
+            <div class="hint-code">
+              GET /download/youtube?url={encodeURIComponent(url)}
+            </div>
+          </div>
+
+          <div class="status" id="status">
+            <!-- status text injected by JS -->
+          </div>
+        </form>
+
+        <div class="result" id="result">
+          <div class="thumb-wrapper">
+            <img id="thumb" src="" alt="Thumbnail video" />
+          </div>
+          <div class="result-body">
+            <div>
+              <div class="result-title" id="title"></div>
+              <div class="meta-row">
+                <div class="chip">
+                  <span class="chip-dot"></span>
+                  <span id="quality">Quality: -</span>
+                </div>
+                <div class="chip">
+                  🔊 Audio + Video
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="result-actions">
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="download-link"
+                  class="download-link"
+                >
+                  <button type="button" class="btn-primary" id="download-btn">
+                    <span class="spark"></span>
+                    <span class="icon">⬇</span>
+                    <span>Download Sekarang</span>
+                  </button>
+                </a>
+                <button type="button" class="btn-secondary" id="copy-link-btn">
+                  🔒 Copy direct link
+                </button>
+              </div>
+              <div class="result-note">
+                Gunakan website ini dengan bijak.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>
+            Developer :
+            <strong>YawwOffc </strong>
+          </span>
+          <span>Made for people who benci klik 5 iklan dulu baru bisa download.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("yt-form");
+    const input = document.getElementById("yt-url");
+    const submitBtn = document.getElementById("submit-btn");
+    const btnText = submitBtn.querySelector(".btn-text");
+    const statusBox = document.getElementById("status");
+
+    const resultBox = document.getElementById("result");
+    const thumbEl = document.getElementById("thumb");
+    const titleEl = document.getElementById("title");
+    const qualityEl = document.getElementById("quality");
+    const downloadLink = document.getElementById("download-link");
+    const copyLinkBtn = document.getElementById("copy-link-btn");
+    const downloadBtn = document.getElementById("download-btn");
+
+    let lastDownloadUrl = "";
+
+    function setStatus(type, message) {
+      statusBox.className = "status " + (type || "");
+      statusBox.innerHTML = message
+        ? '<span class="dot"></span><span class="status-text">' +
+          message +
+          "</span>"
+        : "";
+    }
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        submitBtn.disabled = true;
+        btnText.innerHTML = "";
+        const loader = document.createElement("div");
+        loader.className = "loader";
+        submitBtn.insertBefore(loader, submitBtn.firstChild);
+        setStatus("ok", "Menghubungi API, sabar 1 detik. Hidupmu sudah menunggu hal yang lebih lama dari ini.");
+      } else {
+        submitBtn.disabled = false;
+        const loader = submitBtn.querySelector(".loader");
+        if (loader) loader.remove();
+        btnText.innerHTML = "Generate Link";
+      }
+    }
+
+    function resetResult() {
+      resultBox.classList.remove("show");
+      lastDownloadUrl = "";
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      resetResult();
+
+      const url = (input.value || "").trim();
+
+      if (!url) {
+        setStatus("error", "Isi dulu URL YouTube-nya, jangan cuma niat di hati.");
+        return;
+      }
+
+      if (!url.includes("youtu")) {
+        setStatus("error", "Itu bukan URL YouTube. Minimal mirip dulu.");
+        return;
+      }
+
+      const apiUrl =
+        "https://zelapioffciall.koyeb.app/download/youtube?url=" +
+        encodeURIComponent(url);
+
+      try {
+        setLoading(true);
+
+        const res = await fetch(apiUrl);
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+
+        const data = await res.json();
+
+        if (!data || data.status !== true || !data.result) {
+          setStatus("error", "API balas tapi tanpa data yang bener. Cek lagi URL atau API-nya.");
+          return;
+        }
+
+        const { title, thumbnail, quality, download_url } = data.result;
+
+        if (!download_url) {
+          setStatus("error", "Download URL kosong dari API. Frontend tidak bisa sulap.");
+          return;
+        }
+
+        lastDownloadUrl = download_url;
+
+        // Isi UI
+        titleEl.textContent = title || "Tanpa judul";
+        thumbEl.src = thumbnail || "";
+        thumbEl.alt = title || "Thumbnail video";
+        qualityEl.textContent = "Quality: " + (quality || "unknown");
+
+        downloadLink.href = download_url;
+
+        resultBox.classList.add("show");
+        setStatus("ok", "Berhasil dapat link. Silakan download sebelum kadaluarsa.");
+      } catch (err) {
+        console.error(err);
+        setStatus(
+          "error",
+          "Gagal menghubungi API. Bisa karena CORS, API down, atau semesta tidak berpihak."
+        );
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    copyLinkBtn.addEventListener("click", async () => {
+      if (!lastDownloadUrl) {
+        setStatus("error", "Belum ada link download yang bisa dicopy.");
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(lastDownloadUrl);
+          setStatus("ok", "Direct link sudah dicopy ke clipboard. Jangan lupa paste di tempat yang benar.");
+        } else {
+          // fallback
+          const textarea = document.createElement("textarea");
+          textarea.value = lastDownloadUrl;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textarea);
+          setStatus("ok", "Direct link sudah dicopy (fallback mode).");
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus("error", "Gagal copy ke clipboard. Kamu bisa copy manual dari console kalau nekad.");
+      }
+    });
+
+    // Optional: klik download button juga membuka link
+    downloadBtn.addEventListener("click", () => {
+      if (!lastDownloadUrl) {
+        setStatus("error", "Belum ada link download. Generate dulu.");
+        return;
+      }
+      window.open(lastDownloadUrl, "_blank", "noopener");
+    });
+  </script>
+</body>
+</html>
